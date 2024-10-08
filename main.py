@@ -31,13 +31,23 @@ def arguments():
         help="path of TSV raw data",
     )
 
+    # Path of admix model files
+    parser.add_argument(
+        "-mp",
+        "--modelPath",
+        nargs="?",
+        required=False,
+        default=".",
+        help="path of admix model files",
+    )
+
     # filename of allele frequency without extension
     parser.add_argument(
         "-af",
         "--alleleFrqFile",
         nargs="?",
         default="wbbc_{}".format(time.strftime("%Y-%m-%d", time.localtime())),
-        help="file name of allele frequency without extension",
+        help="file name of allele and frequency without extension",
     )
 
     # decimal digits of alleles frequency
@@ -84,42 +94,46 @@ def arguments():
 
 # 基于基因芯片的TSV数据，从WBBC的VCF中筛选出符合条件的突变和频率数据，生成alleles和frequency文件作为祖源计算器的参考数据集
 def main():
-    # get arguments
-    args = arguments()
+    try:
+        # get arguments
+        args = arguments()
 
-    # TSV文件集合
-    tsvFiles = []
+        # TSV文件集合
+        tsvFiles = []
 
-    # 指定TSV文件
-    if args.tsvFile != None:
-        tsvFiles.extend(args.tsvFile.strip().split())
+        # 指定TSV文件
+        if args.tsvFile != None:
+            tsvFiles.extend(args.tsvFile.strip().split())
 
-    # 指定TSV目录
-    if args.tsvPath != None:
-        tsvPath = args.tsvPath.strip()
-        for file in os.listdir(tsvPath):
-            if os.path.isfile(os.path.join(tsvPath, file)):
-                tsvFiles.append(os.path.join(tsvPath, file))
+        # 指定TSV目录
+        if args.tsvPath != None:
+            tsvPath = args.tsvPath.strip()
+            for file in os.listdir(tsvPath):
+                if os.path.isfile(os.path.join(tsvPath, file)):
+                    tsvFiles.append(os.path.join(tsvPath, file))
 
-    if len(tsvFiles) > 0:
-        isTsvExist = True
-        for file in tsvFiles:
-            if not os.access(file, os.F_OK):
-                print("TSV file {} is not available.".format(file))
-                isTsvExist = False
-    else:
-        print("Please set one more TSV files or path.")
-        isTsvExist = False
+        if len(tsvFiles) > 0:
+            for file in tsvFiles:
+                if not os.access(file, os.F_OK):
+                    raise Exception("TSV file {} is not available.".format(file))
+        else:
+            raise Exception("Please set one more TSV files or path.")
 
-    if isTsvExist:
+        if not os.path.exists(args.modelPath):
+            raise Exception("Please set correct path of admix model files.")
+
         wbbc.make_allele_frq(
             tsvFiles,
             args.highLD,
+            args.modelPath,
             args.alleleFrqFile,
             args.afDigits,
             args.stdev,
             args.thread,
         )
+
+    except Exception as e:
+        print(f"发生错误：{e}")
 
 
 if __name__ == "__main__":

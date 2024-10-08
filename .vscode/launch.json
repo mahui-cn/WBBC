@@ -14,7 +14,9 @@
                 "-tp",
                 "tsv_tmpl",
                 "-hld",
-                "high_ld/high_ld_hg19.txt"
+                "high_ld/high_ld_hg19.txt",
+                "-mp",
+                "admix_model"
             ]
         }
     ]

@@ -1,5 +1,4 @@
 __pycache__/*
 wbbc_vcf/*
 wbbc_vcf_hg38/*
-*.alleles
-*.F
+admix_model/*

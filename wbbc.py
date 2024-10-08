@@ -8,7 +8,7 @@ VCF_FILENAME = "wbbc_vcf/WBBC.chr{}.GRCh37_PhaseI.vcf"
 
 
 # https://wbbc.westlake.edu.cn/
-# 根据西湖中国样本库，生成祖源模型数据文件
+# 根据西湖中国样本库，生成祖源模型文件
 # The VCF is annotated with rsIDs from dbSNP151, and the following INFO fields:
 # AC:Allele count in called genotypes in WBBC
 # AF:Allele frequency in called genotypes in WBBC
@@ -27,6 +27,7 @@ VCF_FILENAME = "wbbc_vcf/WBBC.chr{}.GRCh37_PhaseI.vcf"
 def make_allele_frq(
     tsvFiles,
     highLDFileName="",
+    modelPath=".",
     alleleFrqFile="wbbc",
     afDigits=6,
     stdDevThreshold=0.03,
@@ -40,9 +41,11 @@ def make_allele_frq(
         snp_total_count = 0
 
         with open(
-            "{}.alleles".format(alleleFrqFile), "w", encoding="utf-8"
+            "{}/{}.alleles".format(modelPath, alleleFrqFile), "w", encoding="utf-8"
         ) as alleleFile:
-            with open("{}.F".format(alleleFrqFile), "w", encoding="utf-8") as frqFile:
+            with open(
+                "{}/{}.F".format(modelPath, alleleFrqFile), "w", encoding="utf-8"
+            ) as frqFile:
                 # 多线程遍历所有VCF文件
                 with ThreadPoolExecutor(max_workers=maxWorkers) as t:
                     task_list = []
