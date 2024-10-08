@@ -1,4 +1,4 @@
-# Make Admixture model files from WBBC project of West Lake University
+# Create Admixture model files from WBBC project of West Lake University
 Create admixture model files (*.F, *.alleles) based on WBBC project of West Lake University. Microarray chip files (TSV format) from popular genetic testing companies are used as referenced SNPs. Linkage disequilibrium SNPs could be eliminated. The output admixture model files could be used for model based admixture calculator such as https://geneu.xyz/user-profile
 
 This program features multiple threads acording to user's CPU cores.
