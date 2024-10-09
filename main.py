@@ -46,6 +46,7 @@ def arguments():
         "-af",
         "--alleleFrqFile",
         nargs="?",
+        required=False,
         default="wbbc_{}".format(time.strftime("%Y-%m-%d", time.localtime())),
         help="file name of allele and frequency without extension",
     )
@@ -86,7 +87,7 @@ def arguments():
         nargs="?",
         type=int,
         default=cpu_count() if cpu_count() > 0 else 4,
-        help="threads count for concurrency",
+        help="threads for concurrency",
     )
 
     return parser.parse_args()
