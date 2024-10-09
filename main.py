@@ -113,6 +113,7 @@ def main():
                 if os.path.isfile(os.path.join(tsvPath, file)):
                     tsvFiles.append(os.path.join(tsvPath, file))
 
+        # 校验TSV文件集合
         if len(tsvFiles) > 0:
             for file in tsvFiles:
                 if not os.access(file, os.F_OK):
@@ -120,9 +121,11 @@ def main():
         else:
             raise Exception("Please set one more TSV files or path.")
 
+        # 如果指定的输出目录不存在，则新建
         if not os.path.exists(args.modelPath):
-            raise Exception("Please set correct path of admix model files.")
+            os.mkdir(args.modelPath)
 
+        # 根据指定的各个参数，使用TSV模板文件，WBBC的VCF数据，生成祖源模型数据
         wbbc.make_allele_frq(
             tsvFiles,
             args.highLD,
