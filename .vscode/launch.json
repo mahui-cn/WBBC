@@ -13,10 +13,10 @@
             "args": [
                 "-tp",
                 "tsv_tmpl",
-                "-hld",
-                "high_ld/high_ld_hg19.txt",
                 "-mp",
-                "admix_model"
+                "admix_model",
+                "-hld",
+                "high_ld/high_ld_hg19.txt"
             ]
         }
     ]
