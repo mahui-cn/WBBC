@@ -5,15 +5,21 @@ This program features multiple threads acording to user's CPU cores, default is 
 
 The required VCF files of WBBC could be download at: https://wbbc.westlake.edu.cn/downloads.html
 
-run: `python main.py -tp tsv_tmpl -hld high_ld/high_ld_hg19.txt`
+### run
 
-`-tf: file name of TSV raw data`  
-`-tp: path of TSV raw data`  
-`-mp: path of admix model files`  
-`-af: file name of allele and frequency without extension`  
-`-ad: decimal digits of alleles frequency`  
-`-sd: threshold of standard deviation of alleles frequency`  
-`-hld: filename of regions of High Linkage Disequilibrium. Refer to: https://genome.sph.umich.edu/wiki/Regions_of_high_linkage_disequilibrium_(LD)`  
-`-th: threads for concurrency`
+```
+python main.py -tp tsv_tmpl -hld high_ld/high_ld_hg19.txt`
 
-ref: https://doi.org/10.1038/s41467-022-30526-x
+-tf: file name of TSV raw data
+-tp: path of TSV raw data
+-mp: path of admix model files
+-af: file name of allele and frequency without extension
+-ad: decimal digits of alleles frequency
+-sd: threshold of standard deviation of alleles frequency
+-hld: filename of regions of High Linkage Disequilibrium. Refer to: https://genome.sph.umich.edu/wiki/Regions_of_high_linkage_disequilibrium_(LD)
+-th: threads for concurrency
+```
+
+### Citation
+
+https://doi.org/10.1038/s41467-022-30526-x
