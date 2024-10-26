@@ -5,10 +5,10 @@ This program features multiple threads acording to user's CPU cores, default is 
 
 The required VCF files of WBBC could be download at: https://wbbc.westlake.edu.cn/downloads.html
 
-### run
+### Run
 
 ```
-python main.py -tp tsv_tmpl -hld high_ld/high_ld_hg19.txt`
+python main.py -tp tsv_tmpl -hld high_ld/high_ld_hg19.txt
 
 -tf: file name of TSV raw data
 -tp: path of TSV raw data
