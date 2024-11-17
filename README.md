@@ -3,7 +3,7 @@ Create admixture model files (*.F, *.alleles) based on WBBC project of Westlake 
 
 This program features multiple threads acording to user's CPU cores, default is 4 threads.
 
-The required VCF files of WBBC could be download at: https://wbbc.westlake.edu.cn/downloads.html
+The required VCF files of WBBC could be downloaded at: https://wbbc.westlake.edu.cn/downloads.html
 
 ### Run
 
