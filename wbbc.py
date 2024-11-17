@@ -25,29 +25,29 @@ VCF_FILENAME = "wbbc_vcf/WBBC.chr{}.GRCh37_PhaseI.vcf"
 # DP:Raw read depth
 # VQSLOD:Variant Recalibration Score from GATK
 def make_allele_frq(
-    tsvFiles,
-    highLDFileName="",
-    modelPath=".",
-    alleleFrqFile="wbbc",
-    afDigits=6,
-    stdDevThreshold=0.03,
-    maxWorkers=4,
-):
+    tsv_files: list,
+    high_ld_filename: str = "",
+    model_path: str = ".",
+    allele_frq_file: str = "wbbc",
+    af_digits: int = 6,
+    std_dev_threshold: float = 0.03,
+    max_workers: int = 4,
+) -> None:
     try:
         # 从TSV文件获取RSID集合
-        rsid_set = get_rsid(tsvFiles, highLDFileName)
+        rsid_set = get_rsid(tsv_files, high_ld_filename)
 
         # SNP总计数
         snp_total_count = 0
 
         with open(
-            "{}/{}.alleles".format(modelPath, alleleFrqFile), "w", encoding="utf-8"
-        ) as alleleFile:
+            "{}/{}.alleles".format(model_path, allele_frq_file), "w", encoding="utf-8"
+        ) as allele_file:
             with open(
-                "{}/{}.F".format(modelPath, alleleFrqFile), "w", encoding="utf-8"
-            ) as frqFile:
+                "{}/{}.F".format(model_path, allele_frq_file), "w", encoding="utf-8"
+            ) as frq_file:
                 # 多线程遍历所有VCF文件
-                with ThreadPoolExecutor(max_workers=maxWorkers) as t:
+                with ThreadPoolExecutor(max_workers=max_workers) as t:
                     task_list = []
                     for chr in range(1, 23):
                         print("\tTask {} is launching...".format(chr))
@@ -56,8 +56,8 @@ def make_allele_frq(
                                 match_snp_from_vcf,
                                 rsid_set,
                                 VCF_FILENAME.format(chr),
-                                afDigits,
-                                stdDevThreshold,
+                                af_digits,
+                                std_dev_threshold,
                             )
                         )
 
@@ -68,14 +68,14 @@ def make_allele_frq(
                         if len(allele_list) == len(frq_list):
                             snp_total_count += len(allele_list)
                             # 结果写入alleles文件
-                            alleleFile.writelines(allele_list)
-                            alleleFile.flush()
+                            allele_file.writelines(allele_list)
+                            allele_file.flush()
                             # 结果写入frequency文件
-                            frqFile.writelines(frq_list)
-                            frqFile.flush()
+                            frq_file.writelines(frq_list)
+                            frq_file.flush()
                             print(
                                 "\tOne task success, {:,} SNPs have been saved in {}.alleles and {}.F respectively".format(
-                                    len(allele_list), alleleFrqFile, alleleFrqFile
+                                    len(allele_list), allele_frq_file, allele_frq_file
                                 )
                             )
                         else:
@@ -87,7 +87,7 @@ def make_allele_frq(
 
         print(
             "All {} tasks finished. Totally {:,} SNPs have been saved in {}.alleles and {}.F respectively.".format(
-                len(task_list), snp_total_count, alleleFrqFile, alleleFrqFile
+                len(task_list), snp_total_count, allele_frq_file, allele_frq_file
             )
         )
 
@@ -100,47 +100,49 @@ def make_allele_frq(
 
 
 # 在指定的VCF文件中筛选符合条件的SNP
-def match_snp_from_vcf(rsid_set, vcfFileName, afDigits, stdDevThreshold):
+def match_snp_from_vcf(
+    rsid_set: set, vcf_filename: str, af_digits: int, std_dev_threshold: float
+):
     # 当前VCF文件中筛选出的alleles和frequency列表
     allele_list = []
     frq_list = []
 
     # 遍历指定的VCF文件
     with open(
-        vcfFileName,
+        vcf_filename,
         "r",
         encoding="utf-8",
-    ) as vcfFile:
-        print("Processing WBBC vcf file: " + vcfFileName)
+    ) as vcf_file:
+        print("Processing WBBC vcf file: " + vcf_filename)
         # 构造vcf字典，以RSID作为键，REF，ALT和INFO作为键值，只需要SNP，不包括Indel，生成vcf字典集
-        vcfDict = {}
-        for vcfLine in vcfFile.readlines():
-            if len(vcfLine) > 0 and not vcfLine.startswith("#"):
-                vcfLineList = vcfLine.split("\t")
+        vcf_dict = {}
+        for vcf_line in vcf_file.readlines():
+            if len(vcf_line) > 0 and not vcf_line.startswith("#"):
+                vcf_lineList = vcf_line.split("\t")
                 if (
-                    len(vcfLineList) == 8
-                    and vcfLineList[2] != "."
-                    and len(vcfLineList[3]) == 1
-                    and len(vcfLineList[4]) == 1
+                    len(vcf_lineList) == 8
+                    and vcf_lineList[2] != "."
+                    and len(vcf_lineList[3]) == 1
+                    and len(vcf_lineList[4]) == 1
                 ):
-                    vcfDict[vcfLineList[2]] = {
-                        "ref": vcfLineList[3],
-                        "alt": vcfLineList[4],
-                        "info": vcfLineList[7],
+                    vcf_dict[vcf_lineList[2]] = {
+                        "ref": vcf_lineList[3],
+                        "alt": vcf_lineList[4],
+                        "info": vcf_lineList[7],
                     }
 
         # 遍历rsid模板集合，在vcf字典集查询对应的rsid，如有则加入
         for rsid in rsid_set:
-            if rsid in vcfDict:
-                infoList = vcfDict[rsid]["info"].split(";")
-                if len(infoList) == 15:
-                    af = float(infoList[1].split("=")[1])
+            if rsid in vcf_dict:
+                info_list = vcf_dict[rsid]["info"].split(";")
+                if len(info_list) == 15:
+                    af = float(info_list[1].split("=")[1])
                     if af != 0 and af != 1:
                         # 解析每个人群的alt allele频率
-                        north_af = float(infoList[4].split("=")[1])
-                        central_af = float(infoList[6].split("=")[1])
-                        south_af = float(infoList[8].split("=")[1])
-                        lingnan_af = float(infoList[10].split("=")[1])
+                        north_af = float(info_list[4].split("=")[1])
+                        central_af = float(info_list[6].split("=")[1])
+                        south_af = float(info_list[8].split("=")[1])
+                        lingnan_af = float(info_list[10].split("=")[1])
 
                         # 只统计人群allele频率标准差大于阈值的SNP
                         if (
@@ -152,61 +154,63 @@ def match_snp_from_vcf(rsid_set, vcfFileName, afDigits, stdDevThreshold):
                                     lingnan_af,
                                 ]
                             )
-                            < stdDevThreshold
+                            < std_dev_threshold
                         ):
                             continue
 
                         # 构造allele数据行，较大的是major突变, 较小的是minor突变
                         major_allele = (
-                            vcfDict[rsid]["ref"] if af < 0.5 else vcfDict[rsid]["alt"]
+                            vcf_dict[rsid]["ref"] if af < 0.5 else vcf_dict[rsid]["alt"]
                         )
 
                         minor_allele = (
-                            vcfDict[rsid]["ref"] if af >= 0.5 else vcfDict[rsid]["alt"]
+                            vcf_dict[rsid]["ref"]
+                            if af >= 0.5
+                            else vcf_dict[rsid]["alt"]
                         )
 
-                        alleleLine = "{} {} {}\n".format(
+                        allele_line = "{} {} {}\n".format(
                             rsid,
                             minor_allele,
                             major_allele,
                         )
-                        allele_list.append(alleleLine)
-                        # print("\tCollecting allele data: " + alleleLine)
+                        allele_list.append(allele_line)
+                        # print("\tCollecting allele data: " + allele_line)
 
                         # 构造frequency数据行，获取每个祖源成分的major突变频率
-                        frqLine = "{} {} {} {}\n".format(
+                        frq_line = "{} {} {} {}\n".format(
                             round(
                                 (north_af if af >= 0.5 else 1 - north_af),
-                                afDigits,
+                                af_digits,
                             ),
                             round(
                                 (central_af if af >= 0.5 else 1 - central_af),
-                                afDigits,
+                                af_digits,
                             ),
                             round(
                                 (south_af if af >= 0.5 else 1 - south_af),
-                                afDigits,
+                                af_digits,
                             ),
                             round(
                                 (lingnan_af if af >= 0.5 else 1 - lingnan_af),
-                                afDigits,
+                                af_digits,
                             ),
                         )
-                        frq_list.append(frqLine)
-                        # print("\tCollecting frequency data: " + frqLine)
+                        frq_list.append(frq_line)
+                        # print("\tCollecting frequency data: " + frq_line)
 
     return allele_list, frq_list
 
 
 # 从TSV文件获取RSID集合
-def get_rsid(tsvFiles, highLDFileName):
+def get_rsid(tsv_files: list, high_ld_filename: str) -> set:
     # TSV数据源的RSID集合
     rsid_set = set()
 
     # 获取高连锁不平衡数据
     hld_list = (
-        get_high_ld(highLDFileName)
-        if highLDFileName != "" and highLDFileName != None
+        get_high_ld(high_ld_filename)
+        if high_ld_filename != "" and high_ld_filename != None
         else []
     )
     rsid_in_hld_count = 0
@@ -214,38 +218,39 @@ def get_rsid(tsvFiles, highLDFileName):
     # 常染色体集合
     chr_set = {str(chr) for chr in range(1, 23)}
 
-    if tsvFiles != None:
-        for tsvFileName in tsvFiles:
-            print("Collecting RSID in TSV file {0}...".format(tsvFileName))
-            with open(tsvFileName, "r", encoding="utf-8") as tsvFile:
-                for tsvLine in tsvFile.readlines():
-                    if len(tsvLine) > 0 and not tsvLine.startswith(
+    if tsv_files != None:
+        for tsv_filename in tsv_files:
+            print("Collecting RSID in TSV file {0}...".format(tsv_filename))
+            with open(tsv_filename, "r", encoding="utf-8") as tsv_file:
+                for tsv_line in tsv_file.readlines():
+                    if len(tsv_line) > 0 and not tsv_line.startswith(
                         ("#", "\n", "\t", '"')
                     ):
-                        tsvLineList = tsvLine.split("\t")
+                        tsv_line_list = tsv_line.split("\t")
                         if (
-                            len(tsvLineList) >= 2
-                            and tsvLineList[0] not in rsid_set
-                            and tsvLineList[1] in chr_set
+                            len(tsv_line_list) >= 2
+                            and tsv_line_list[0] not in rsid_set
+                            and tsv_line_list[1] in chr_set
                         ):
                             # 去除高连锁不平衡的SNP
                             inHLD = False
                             for i in range(len(hld_list)):
                                 if (
-                                    tsvLineList[1] == hld_list[i]["chr"]
-                                    and int(tsvLineList[2]) >= hld_list[i]["start_pos"]
-                                    and int(tsvLineList[2]) <= hld_list[i]["end_pos"]
+                                    tsv_line_list[1] == hld_list[i]["chr"]
+                                    and int(tsv_line_list[2])
+                                    >= hld_list[i]["start_pos"]
+                                    and int(tsv_line_list[2]) <= hld_list[i]["end_pos"]
                                 ):
                                     rsid_in_hld_count += 1
                                     inHLD = True
                                     break
                             if not inHLD:
-                                rsid_set.add(tsvLineList[0])
+                                rsid_set.add(tsv_line_list[0])
 
     if len(rsid_set) > 0:
         print(
             "Finish collecting {:,} RSID in {}\nApart from {:,} RSID in high LD region.".format(
-                len(rsid_set), " ".join(tsvFiles), rsid_in_hld_count
+                len(rsid_set), " ".join(tsv_files), rsid_in_hld_count
             )
         )
     else:
@@ -256,27 +261,29 @@ def get_rsid(tsvFiles, highLDFileName):
 
 # 获取连锁不平衡数据high linkage disequilibrium
 # https://genome.sph.umich.edu/wiki/Regions_of_high_linkage_disequilibrium_(LD)
-def get_high_ld(ldFileName):
-    if not os.access(ldFileName, os.F_OK):
+def get_high_ld(ld_filename: str) -> list:
+    if not os.access(ld_filename, os.F_OK):
         raise Exception(
-            "High Linkage Disequilibrium file '{}' is not available.".format(ldFileName)
+            "High Linkage Disequilibrium file '{}' is not available.".format(
+                ld_filename
+            )
         )
 
     ld_list = []
     with open(
-        ldFileName,
+        ld_filename,
         "r",
         encoding="utf-8",
-    ) as hdFile:
-        for hdLine in hdFile.readlines():
-            if len(hdLine) > 0 and not hdLine.startswith("#"):
-                hdLineList = hdLine.split("\t")
-                if len(hdLineList) == 3:
+    ) as hd_file:
+        for hd_line in hd_file.readlines():
+            if len(hd_line) > 0 and not hd_line.startswith("#"):
+                hd_line_list = hd_line.split("\t")
+                if len(hd_line_list) == 3:
                     ld_list.append(
                         {
-                            "chr": hdLineList[0],
-                            "start_pos": int(hdLineList[1]),
-                            "end_pos": int(hdLineList[2]),
+                            "chr": hd_line_list[0],
+                            "start_pos": int(hd_line_list[1]),
+                            "end_pos": int(hd_line_list[2]),
                         }
                     )
 
