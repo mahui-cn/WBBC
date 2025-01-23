@@ -80,7 +80,7 @@ def make_allele_frq(
                             )
                         else:
                             print(
-                                "\tOne task failed and not saved to file. The rows of alleles is {}, while the rows of frequency is {}".format(
+                                "\tOne task failed and not saved to file due to not matched amount between alleles and frequency. The rows of alleles is {}, while the rows of frequency is {}".format(
                                     len(allele_list), len(frq_list)
                                 )
                             )
@@ -118,17 +118,17 @@ def match_snp_from_vcf(
         vcf_dict = {}
         for vcf_line in vcf_file.readlines():
             if len(vcf_line) > 0 and not vcf_line.startswith("#"):
-                vcf_lineList = vcf_line.split("\t")
+                vcf_line_list = vcf_line.split("\t")
                 if (
-                    len(vcf_lineList) == 8
-                    and vcf_lineList[2] != "."
-                    and len(vcf_lineList[3]) == 1
-                    and len(vcf_lineList[4]) == 1
+                    len(vcf_line_list) == 8
+                    and vcf_line_list[2] != "."
+                    and len(vcf_line_list[3]) == 1
+                    and len(vcf_line_list[4]) == 1
                 ):
-                    vcf_dict[vcf_lineList[2]] = {
-                        "ref": vcf_lineList[3],
-                        "alt": vcf_lineList[4],
-                        "info": vcf_lineList[7],
+                    vcf_dict[vcf_line_list[2]] = {
+                        "ref": vcf_line_list[3],
+                        "alt": vcf_line_list[4],
+                        "info": vcf_line_list[7],
                     }
 
         # 遍历rsid模板集合，在vcf字典集查询对应的rsid，如有则加入
@@ -144,7 +144,7 @@ def match_snp_from_vcf(
                         south_af = float(info_list[8].split("=")[1])
                         lingnan_af = float(info_list[10].split("=")[1])
 
-                        # 只统计人群allele频率标准差大于阈值的SNP
+                        # 过滤allele频率标准差大于阈值的SNP
                         if (
                             statistics.pstdev(
                                 [
@@ -158,41 +158,31 @@ def match_snp_from_vcf(
                         ):
                             continue
 
-                        # 构造allele数据行，较大的是major突变, 较小的是minor突变
-                        major_allele = (
-                            vcf_dict[rsid]["ref"] if af < 0.5 else vcf_dict[rsid]["alt"]
-                        )
-
-                        minor_allele = (
-                            vcf_dict[rsid]["ref"]
-                            if af >= 0.5
-                            else vcf_dict[rsid]["alt"]
-                        )
-
+                        # 构造allele数据行，A1是ref allele, A2是alt allele
                         allele_line = "{} {} {}\n".format(
                             rsid,
-                            minor_allele,
-                            major_allele,
+                            vcf_dict[rsid]["ref"],
+                            vcf_dict[rsid]["alt"],
                         )
                         allele_list.append(allele_line)
                         # print("\tCollecting allele data: " + allele_line)
 
-                        # 构造frequency数据行，获取每个祖源成分的major突变频率
+                        # frequency数据行，每个祖源成分的ref allele频率
                         frq_line = "{} {} {} {}\n".format(
                             round(
-                                (north_af if af >= 0.5 else 1 - north_af),
+                                1 - north_af,
                                 af_digits,
                             ),
                             round(
-                                (central_af if af >= 0.5 else 1 - central_af),
+                                1 - central_af,
                                 af_digits,
                             ),
                             round(
-                                (south_af if af >= 0.5 else 1 - south_af),
+                                1 - south_af,
                                 af_digits,
                             ),
                             round(
-                                (lingnan_af if af >= 0.5 else 1 - lingnan_af),
+                                1 - lingnan_af,
                                 af_digits,
                             ),
                         )
