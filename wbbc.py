@@ -113,7 +113,7 @@ def match_snp_from_vcf(
         "r",
         encoding="utf-8",
     ) as vcf_file:
-        print("Processing WBBC vcf file: " + vcf_filename)
+        print("\nProcessing WBBC vcf file: " + vcf_filename)
         # 构造vcf字典，以RSID作为键，REF，ALT和INFO作为键值，只需要SNP，不包括Indel，生成vcf字典集
         vcf_dict = {}
         for vcf_line in vcf_file.readlines():
@@ -222,7 +222,7 @@ def get_rsid(tsv_files: list, high_ld_filename: str) -> set:
                             and tsv_line_list[0] not in rsid_set
                             and tsv_line_list[1] in chr_set
                         ):
-                            # 去除高连锁不平衡的SNP
+                            # 去除连锁不平衡区域的SNP
                             inHLD = False
                             for i in range(len(hld_list)):
                                 if (

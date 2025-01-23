@@ -80,7 +80,7 @@ def arguments():
         help="filename of regions of High Linkage Disequilibrium. Refer to: https://genome.sph.umich.edu/wiki/Regions_of_high_linkage_disequilibrium_(LD)",
     )
 
-    # threshold of standard deviation of alleles frequency
+    # threads for concurrency
     parser.add_argument(
         "-th",
         "--thread",
