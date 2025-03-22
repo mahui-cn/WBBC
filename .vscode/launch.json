@@ -16,7 +16,7 @@
                 "-mp",
                 "admix_model",
                 "-hld",
-                "high_ld/high_ld_hg19.txt"
+                ""
             ]
         }
     ]
